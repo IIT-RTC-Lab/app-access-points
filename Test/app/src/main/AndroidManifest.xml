@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -21,6 +22,7 @@
         </activity>
         <activity
             android:name=".CheckWifi"
+            android:screenOrientation="portrait"
             android:label="Check Wifi"></activity>
     </application>
 
