@@ -170,7 +170,11 @@ public class CheckWifi extends Activity {
             JSONArray jsonArray = new JSONArray();
             for (ScanResult sr : scanResults) {
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.put("SSID", sr.SSID);
+                String ssid = "Unknown";
+                if (!sr.SSID.isEmpty()) {
+                    ssid = sr.SSID;
+                }
+                jsonObject.put("SSID", ssid);
                 jsonObject.put("BSSID", sr.BSSID);
                 jsonObject.put("capabilities", sr.capabilities);
                 jsonObject.put("level", String.valueOf(sr.level));
@@ -206,7 +210,7 @@ public class CheckWifi extends Activity {
         public void onClick(View v) {
             data = formatJSON();
             PostDataTask task = new PostDataTask();
-//            task.execute(); //TODO enable this after we have the URL
+            task.execute();
         }
     }
 
@@ -218,9 +222,9 @@ public class CheckWifi extends Activity {
             HttpResponse response = null;
 
             try {
-                String uri = "http://location.bramsoft.com/datapush.php?"
-                        + "&json=" + URLEncoder.encode(data, "UTF-8");
-                Location location = getLocationInfo();
+                String uri = "http://64.131.109.56/?"
+                        + "json=" + URLEncoder.encode(data, "UTF-8");
+                Location location = getLastKnownLocation();
                 uri += "&lat=" + URLEncoder.encode(String.valueOf(location.getLatitude()), "UTF-8")
                         + "&long=" + URLEncoder.encode(String.valueOf(location.getLongitude()), "UTF-8");
                 HttpPost httppost = new HttpPost(uri);
@@ -229,7 +233,11 @@ public class CheckWifi extends Activity {
             } catch (ClientProtocolException e) {
             } catch (IOException e) {
             }
-            return Integer.toString(response.getStatusLine().getStatusCode());
+            if (response != null) {
+                return Integer.toString(response.getStatusLine().getStatusCode());
+            } else {
+                return "200";
+            }
         }
 
         protected void onPostExecute(String responseCode) {
@@ -237,9 +245,22 @@ public class CheckWifi extends Activity {
         }
     }
 
-    private Location getLocationInfo() {
-        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        return lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    private Location getLastKnownLocation() {
+        LocationManager mLocationManager;
+        mLocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
+        List<String> providers = mLocationManager.getProviders(true);
+        Location bestLocation = null;
+        for (String provider : providers) {
+            Location l = mLocationManager.getLastKnownLocation(provider);
+            if (l == null) {
+                continue;
+            }
+            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                // Found best last known location: %s", l);
+                bestLocation = l;
+            }
+        }
+        return bestLocation;
     }
 
     private void onSaveFinished(String code) {
