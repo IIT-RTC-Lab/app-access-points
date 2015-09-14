@@ -30,10 +30,16 @@
                 android:gravity="center"
                 android:layout_gravity="center"
                 android:text="send csv file"/>
-        <Button android:id="@+id/send_button_url"
+        <Button android:id="@+id/refresh_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="6dp"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:text="refresh"/>
+        <Button android:id="@+id/send_button_url"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:layout_gravity="center"
                 android:text="send json url"/>
