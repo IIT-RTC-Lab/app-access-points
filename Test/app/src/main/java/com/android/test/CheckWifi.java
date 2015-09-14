@@ -35,10 +35,13 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.List;
 
+
 /**
  * Created by javier on 4/03/15.
  */
 public class CheckWifi extends Activity {
+
+    static final int ACCEPTABLE_LEVEL = -70;
 
     TextView wifiState;
     Button sendButton;
@@ -75,7 +78,7 @@ public class CheckWifi extends Activity {
         results += "\r\nMAC Address: " + macAddress + "\r\n";
 
         //Step Nº3: Sending a WiFi probe
-        results += "\r\n" + wifiProbe(15) + "\r\n";
+        results += "\r\n" + wifiProbe() + "\r\n";
 
         wifiState.setText(results);
         if (results != null) {
@@ -109,7 +112,7 @@ public class CheckWifi extends Activity {
      *
      * tolerance = max difference in the level of signal that we consider as valid
      */
-    public String wifiProbe(int tolerance) {
+    public String wifiProbe() {
 
         wifimg.startScan();
 
@@ -118,19 +121,12 @@ public class CheckWifi extends Activity {
         List<ScanResult> wifiScanList = wifimg.getScanResults();
         String probeResult = "";
 
-        //max level we can get from any hotspot
-        int maxLevel = wifiScanList.get(0).level;
-
-        //minimum signal level to consider a hotspot as valid
-        int acceptedLevel = maxLevel - tolerance;
-
         scanResults = wifiScanList;
 
         //foreach loop to get all the hotspots
         for (ScanResult sr : wifiScanList) {
-            if (sr.level >= acceptedLevel) {   //if(sr.level >= minLevel) {
-                probeResult += "\r\n" + sr.toString() + "\r\n";
-            }
+            if (sr.level < ACCEPTABLE_LEVEL) continue;
+            probeResult += "\r\n" + sr.toString() + "\r\n";
         }
         return probeResult;
     }
@@ -145,9 +141,11 @@ public class CheckWifi extends Activity {
             CSVWriter writer = null;
             try {
                 writer = new CSVWriter(new FileWriter(file), ',');
-                for (ScanResult sc : scanResults) {
-                    String[] entries = sc.toString().split(","); // array of your values
-                    writer.writeNext(entries);
+                for (ScanResult sr : scanResults) {
+                    if (sr.level >= ACCEPTABLE_LEVEL) {
+                        String[] entries = sr.toString().split(","); // array of your values
+                        writer.writeNext(entries);
+                    }
                 }
                 writer.close();
             } catch (IOException e) {
@@ -169,6 +167,7 @@ public class CheckWifi extends Activity {
             JSONObject parent = new JSONObject();
             JSONArray jsonArray = new JSONArray();
             for (ScanResult sr : scanResults) {
+                if (sr.level < ACCEPTABLE_LEVEL) continue;
                 JSONObject jsonObject = new JSONObject();
                 String ssid = "Unknown";
                 if (!sr.SSID.isEmpty()) {
@@ -225,8 +224,8 @@ public class CheckWifi extends Activity {
                 String uri = "http://64.131.109.56/?"
                         + "json=" + URLEncoder.encode(data, "UTF-8");
                 Location location = getLastKnownLocation();
-                uri += "&lat=" + URLEncoder.encode(String.valueOf(location.getLatitude()), "UTF-8")
-                        + "&long=" + URLEncoder.encode(String.valueOf(location.getLongitude()), "UTF-8");
+//                uri += "&lat=" + URLEncoder.encode(String.valueOf(location.getLatitude()), "UTF-8")
+//                        + "&long=" + URLEncoder.encode(String.valueOf(location.getLongitude()), "UTF-8");
                 HttpPost httppost = new HttpPost(uri);
                 response = httpClient.execute(httppost);
 
@@ -247,7 +246,7 @@ public class CheckWifi extends Activity {
 
     private Location getLastKnownLocation() {
         LocationManager mLocationManager;
-        mLocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
+        mLocationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
         List<String> providers = mLocationManager.getProviders(true);
         Location bestLocation = null;
         for (String provider : providers) {
