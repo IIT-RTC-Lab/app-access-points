@@ -139,7 +139,7 @@ public class CheckWifi extends Activity {
 
         //foreach loop to get all the hotspots
         for (ScanResult sr : wifiScanList) {
-            if (sr.SSID.contains("IIT Connect") && channelFilter(sr.frequency)) {
+            if (sr.SSID.contains("IIT-Connect") && channelFilter(sr.frequency)) {
                 if (sr.level < ACCEPTABLE_LEVEL) continue;
                 probeResult += "\r\n" + sr.toString() + "\r\n";
             }
