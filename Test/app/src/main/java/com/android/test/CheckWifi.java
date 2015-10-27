@@ -143,6 +143,10 @@ public class CheckWifi extends Activity {
                 if (sr.level < ACCEPTABLE_LEVEL) continue;
                 probeResult += "\r\n" + sr.toString() + "\r\n";
             }
+            else
+            {
+                scanResults.remove(sr);
+            }
         }
         return probeResult;
     }
