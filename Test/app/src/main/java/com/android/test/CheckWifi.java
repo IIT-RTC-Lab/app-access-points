@@ -136,12 +136,24 @@ public class CheckWifi extends Activity {
 
         scanResults = wifiScanList;
 
+
         //foreach loop to get all the hotspots
         for (ScanResult sr : wifiScanList) {
-            if (sr.level < ACCEPTABLE_LEVEL) continue;
-            probeResult += "\r\n" + sr.toString() + "\r\n";
+            if (sr.SSID.contains("IIT Connect") && channelFilter(sr.frequency)) {
+                if (sr.level < ACCEPTABLE_LEVEL) continue;
+                probeResult += "\r\n" + sr.toString() + "\r\n";
+            }
         }
         return probeResult;
+    }
+
+    /* This method is used to filter 2.4Ghz band
+  takes channel frequency in Mhz as input and returns true/false if channel is within 1-13
+   */
+    public boolean channelFilter(int frequency) {
+        if (frequency >= 2412 && frequency <= 2483)  //  2484-2495 channel 14
+            return true;
+        else return false;
     }
 
     public void exportEmailInCSV(final List<ScanResult> scanResults) throws IOException {
